@@ -61,18 +61,19 @@ std::vector<std::string> CServer::parseTransactionArray(const char * buffer, siz
 	return transactions;
 }
 
-bool CServer::createNewTransaction(const char * buffer, size_t & index, const size_t bytesReceived)
+std::string CServer::createNewTransaction(const char * buffer, size_t & index, const size_t bytesReceived)
 {
 	std::string txid = this->parseString(buffer, index, bytesReceived), addressSender = this->parseString(buffer, index, bytesReceived), addressReceiver = this->parseString(buffer, index, bytesReceived);
 	int returnPassed = m_unspentTransactions.returnPassed(txid, addressSender);
 	if(returnPassed != -1)
 	{
 		m_unspentTransactions.removeTransactionByTxid(txid);
-		m_mempool.addTransaction(CTransaction(addressReceiver, 10, returnPassed + 1, false));
-   		return 0;		
+		
+		CTransaction newTx(addressReceiver, 10, returnPassed + 1, false);
+		m_mempool.addTransaction(newTx);
+   		return newTx.m_txid;		
 	} 
-	return 1;
-	
+	return "";
 }
 
 bool CServer::loadTransaction(const char * buffer, size_t & index, const size_t bytesReceived)
@@ -208,10 +209,14 @@ void CServer::run()
 			send(socketClient, response.c_str(), response.size(), 0);
 		} else if(choice == "createNewTransaction")
 		{
-			if(this->createNewTransaction(buffer, index, bytesReceived) != 0)
+			std::string response = this->createNewTransaction(buffer, index, bytesReceived);
+			if(response != "")
 			{
-				const char * response = "Cannot create the transaction.";	
-				send(socketClient, response, strlen(response), 0);
+				send(socketClient, response.c_str(), response.size(), 0);
+			} else
+			{
+				const char * error = "Cannot create the transaction.";	
+				send(socketClient, error, strlen(error), 0);
 			}
 		} else if(choice == "loadTransaction")
 		{

@@ -13,7 +13,7 @@ public:
 	int bindSocket(const int port);
 	std::string parseString(const char * buffer, size_t & index, const size_t bytesReceived);
 	std::vector<std::string> parseTransactionArray(const char * buffer, size_t index, const size_t bytesReceived);
-	bool createNewTransaction(const char * buffer, size_t & index, const size_t bytes_received);
+	std::string createNewTransaction(const char * buffer, size_t & index, const size_t bytes_received);
 	bool loadTransaction(const char * buffer, size_t & index, const size_t bytes_received);
 	void loadCoinbaseTransaction(const char * buffer, size_t & index, const size_t bytes_received);
 	bool proposeBlock(const char * buffer, size_t & index, const size_t bytes_received);
