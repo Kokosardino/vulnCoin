@@ -19,6 +19,7 @@ public:
 	bool proposeBlock(const char * buffer, size_t & index, const size_t bytes_received);
 	bool stake(const char * buffer, size_t & index, const size_t bytes_received);
 	std::string countNextValidator(const char * buffer, size_t & index, const size_t bytes_received);
+	std::string printTransaction(const char * buffer, size_t & index, const size_t bytesReceived);
 	void run();
 private:
 	int m_socket;

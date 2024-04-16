@@ -156,6 +156,26 @@ std::string CServer::countNextValidator(const char * buffer, size_t & index, con
 	return m_oldStakepool[validator % stakepoolSize].m_address;
 }
 
+std::string CServer::printTransaction(const char * buffer, size_t & index, const size_t bytesReceived)
+{
+	std::string txid = this->parseString(buffer, index, bytesReceived);
+
+	std::string foundString = m_mempool.printTransaction(txid);
+	if(foundString != "")
+	{
+		return foundString;
+	}
+	
+	foundString = m_stakepool.printTransaction(txid);
+	if(foundString != "")
+	{
+		return foundString;
+	}
+	
+	foundString = m_unspentTransactions.printTransaction(txid);
+	return foundString;
+}
+
 void CServer::run()
 {
 	CCryptography crypto;
@@ -252,6 +272,9 @@ void CServer::run()
 		} else if(choice == "printAddress")
 		{
 			send(socketClient, m_address.c_str(), m_address.size(), 0);
+		} else if (choice == "printTransaction"){
+		        std::string response = this->printTransaction(buffer, index, bytesReceived);
+			send(socketClient, response.c_str(), response.size(), 0);
 		} else
 		{
 			std::ostringstream oss;

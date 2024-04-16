@@ -64,6 +64,16 @@ std::string CTransactionContainer::print(const std::string & address) const
 	return oss.str();
 }
 
+std::string CTransactionContainer::printTransaction(const std::string & txid) const
+{
+	std::map<std::string, CTransaction>::const_iterator found = m_container.find(txid);
+	if(found != m_container.end())
+	{
+		return found->second.print();
+	}
+	return "";
+}
+
 bool CTransactionContainer::findTransactions(const std::vector<std::string> & transactions) const
 {
 	for(const std::string & txid : transactions)

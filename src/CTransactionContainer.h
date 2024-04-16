@@ -14,6 +14,7 @@ public:
 	void addTransaction(const CTransaction transaction);
 	std::string print() const;
 	std::string print(const std::string & address) const;
+	std::string printTransaction(const std::string & txid) const;
 	int returnPassed(const std::string & txid, const std::string & address);
 	bool findTransactions(const std::vector<std::string> & transactions) const;
 	void removeTransactionByTxid(const std::string & txid);
