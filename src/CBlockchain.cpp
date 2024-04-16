@@ -40,10 +40,16 @@ void CBlockchain::addBlock(const std::vector<std::string> & transactions)
 std::string CBlockchain::print() const
 {
 	std::ostringstream oss;
+	oss << "[" << std::endl;
 	for(size_t i = 0; i < m_blockchain.size(); ++i)
 	{
 		oss << m_blockchain[i].print();
+		if(i != m_blockchain.size() - 1)
+		{
+			oss << ",";
+		}
 	}
+	oss << "]" << std::endl;
 
 	return oss.str();
 }

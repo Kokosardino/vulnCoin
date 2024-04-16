@@ -32,12 +32,12 @@ std::string CTransaction::print() const
 {
 	std::ostringstream oss;
 	oss << "{" << std::endl
-		<< "	address: \"" << m_address << "\"" << std::endl
-		<< "	txid: \"" << m_txid << "\"" << std::endl
-		<< "	ammount: \"" << m_ammount << "\"" << std::endl
-		<< "	coinbase: \"" << m_coinbase << "\"" << std::endl
-		<< "	passed: \"" << m_passed <<  "\"" << std::endl
-		<< "	timestamp: \"" << m_timestamp <<  "\"" << std::endl
-		<< "}" << std::endl;
+		<< "	\"address\": \"" << m_address << "\"," << std::endl
+		<< "	\"txid\": \"" << m_txid << "\"," << std::endl
+		<< "	\"ammount\": \"" << m_ammount << "\"," << std::endl
+		<< "	\"coinbase\": \"" << m_coinbase << "\"," << std::endl
+		<< "	\"passed\": \"" << m_passed <<  "\"," << std::endl
+		<< "	\"timestamp\": \"" << m_timestamp <<  "\"" << std::endl
+		<< "}";
 	return oss.str();
 }

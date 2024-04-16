@@ -12,11 +12,22 @@ CTransaction CTransactionContainer::getTransactionByTxid(const std::string txid)
 
 std::string CTransactionContainer::print() const
 {
+	std::map<std::string, CTransaction>::const_iterator lastIt = m_container.end();
+	if(!m_container.empty())
+	{
+		--lastIt;
+	}
+
 	std::ostringstream oss;
-	oss << "]" << std::endl;
+	oss << "[" << std::endl;
 	for(std::map<std::string, CTransaction>::const_iterator it = m_container.begin(); it != m_container.end(); ++it)
 	{
-		oss << it->second.print();
+		oss << it->second.print();		
+		if(it != lastIt)
+		{
+			oss << ",";
+		}
+		oss << std::endl;
 	}
 	oss << "]" << std::endl;
 	return oss.str();
@@ -24,6 +35,16 @@ std::string CTransactionContainer::print() const
 
 std::string CTransactionContainer::print(const std::string & address) const
 {
+	std::map<std::string, CTransaction>::const_iterator lastIt = m_container.end();
+	if(!m_container.empty())
+	{
+		--lastIt;
+	}
+	while(lastIt != m_container.begin() && address != lastIt->second.m_address)
+	{
+		--lastIt;
+	}
+
 	std::ostringstream oss;
 	oss << "[" << std::endl;
 	for(std::map<std::string, CTransaction>::const_iterator it = m_container.begin(); it != m_container.end(); ++it)
@@ -32,6 +53,11 @@ std::string CTransactionContainer::print(const std::string & address) const
 		{
 
 			oss << it->second.print();
+			if(lastIt != it)
+			{
+				oss << ",";
+			}
+			oss << std::endl;
 		}
 	}
 	oss << "]" << std::endl;

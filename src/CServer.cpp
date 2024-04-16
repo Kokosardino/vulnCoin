@@ -141,7 +141,6 @@ std::string CServer::countNextValidator(const char * buffer, size_t & index, con
 	for (size_t i = 0; i < m_oldStakepool.size(); ++i) {
 		sscanf(m_oldStakepool[i].m_address.substr(0, 16).c_str(), "%x", &x);
 		validator += x % m_stakepool.size();
-		std::cout << validator << std::endl;
 	}
 	
 	size_t stakepoolSize = m_stakepool.size();

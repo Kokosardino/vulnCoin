@@ -7,13 +7,18 @@ std::string CBlock::print() const
 {
 	std::ostringstream oss;
 	oss 	<< "{" << std::endl 
-		<< "	prevBlockHash: 		\"" << m_prevBlockHash << "\"" << std::endl
-		<< "	transactionsHash:	\"" << m_transactionsHash << "\"" << std::endl
-		<< "	transactions: 		[" << std::endl;
+		<< "	\"prevBlockHash\": 		\"" << m_prevBlockHash << "\"" << std::endl
+		<< "	\"transactionsHash\":	\"" << m_transactionsHash << "\"" << std::endl
+		<< "	\"transactions\": 		[" << std::endl;
 	
-	for(const std::string & transaction : m_transactions)
+	for(size_t transactionCnt = 0; transactionCnt < m_transactions.size(); ++transactionCnt)
 	{
-		oss << "					\"" << transaction << "\"" << std::endl;
+		oss << "					\"" << m_transactions[transactionCnt] << "\"";
+		if(transactionCnt != m_transactions.size() - 1)
+		{
+			oss << ",";
+		}
+		oss << std::endl;
 
 	}
 	oss << "    	      			]" << std::endl << "}" << std::endl;
