@@ -61,21 +61,21 @@ std::vector<std::string> CServer::parseTransactionArray(const char * buffer, siz
 	return transactions;
 }
 
-void CServer::createNewTransaction(const char * buffer, size_t & index, const size_t bytesReceived)
+bool CServer::createNewTransaction(const char * buffer, size_t & index, const size_t bytesReceived)
 {
 	std::string txid = this->parseString(buffer, index, bytesReceived), addressSender = this->parseString(buffer, index, bytesReceived), addressReceiver = this->parseString(buffer, index, bytesReceived);
 	int returnPassed = m_unspentTransactions.returnPassed(txid, addressSender);
 	if(returnPassed != -1)
 	{
 		m_unspentTransactions.removeTransactionByTxid(txid);
-		m_mempool.addTransaction(CTransaction(addressReceiver, 10, returnPassed + 1, false));	     
-	} else 
-	{
-		std::cerr << rang::fg::red << rang::style::bold << "Cannot create the transaction." << rang::style::reset << std::endl;
-	}
+		m_mempool.addTransaction(CTransaction(addressReceiver, 10, returnPassed + 1, false));
+   		return 0;		
+	} 
+	return 1;
+	
 }
 
-void CServer::loadTransaction(const char * buffer, size_t & index, const size_t bytesReceived)
+bool CServer::loadTransaction(const char * buffer, size_t & index, const size_t bytesReceived)
 {
 	std::string txid = this->parseString(buffer, index, bytesReceived), addressSender = this->parseString(buffer, index, bytesReceived), addressReceiver = this->parseString(buffer, index, bytesReceived), timestampString = this->parseString(buffer, index, bytesReceived);
 			
@@ -87,10 +87,9 @@ void CServer::loadTransaction(const char * buffer, size_t & index, const size_t 
 		long long timestampLong = std::stoll(timestampString);
 		time_t timestamp = static_cast<time_t>(timestampLong);
 		m_mempool.addTransaction(CTransaction(addressReceiver, 10, returnPassed + 1, false, timestamp));	     
-	} else 
-	{
-		std::cerr << rang::fg::red << rang::style::bold << "Cannot create the transaction." << rang::style::reset << std::endl;
-	}
+		return 0;
+	} 
+	return 1;
 }
 
 void CServer::loadCoinbaseTransaction(const char * buffer, size_t & index, const size_t bytesReceived)
@@ -101,7 +100,7 @@ void CServer::loadCoinbaseTransaction(const char * buffer, size_t & index, const
 	time_t timestamp = static_cast<time_t>(timestampLong);
 	m_mempool.addTransaction(CTransaction(addressReceiver, 10, 0, true, timestamp));	    }
 
-void CServer::proposeBlock(const char * buffer, size_t & index, const size_t bytesReceived)
+bool CServer::proposeBlock(const char * buffer, size_t & index, const size_t bytesReceived)
 {
 	std::vector<std::string> transactions = this->parseTransactionArray(buffer, index, bytesReceived);
 	if(m_mempool.findTransactions(transactions))
@@ -112,28 +111,32 @@ void CServer::proposeBlock(const char * buffer, size_t & index, const size_t byt
 			m_mempool.removeTransactionByTxid(txid);
 		}
 		m_blockchain.addBlock(transactions);
+		
+		return 0;
 	}
+	return 1;
 }
 
-void CServer::stake(const char * buffer, size_t & index, const size_t bytesReceived)
+bool CServer::stake(const char * buffer, size_t & index, const size_t bytesReceived)
 {
 	std::string txid = this->parseString(buffer, index, bytesReceived), addressSender = this->parseString(buffer, index, bytesReceived);
 	if(m_unspentTransactions.returnPassed(txid, addressSender) != -1)
 	{
 		m_stakepool.addTransaction(m_unspentTransactions.getTransactionByTxid(txid));	 
 		m_unspentTransactions.removeTransactionByTxid(txid);
-	} else 
-	{
-		std::cerr << rang::fg::red << rang::style::bold << "The specified transaction is not in your unspent transactions." << rang::style::reset << std::endl;
+		return 0;
 	}
+	return 1;
 }
 
-void CServer::countNextValidator(const char * buffer, size_t & index, const size_t bytesReceived)
+std::string CServer::countNextValidator(const char * buffer, size_t & index, const size_t bytesReceived)
 {
 	unsigned int validator = 0, x;
 	//Convert first 32 bits of lastBlockHash into u_int and modulate it. Will overflow and break the attack on architectures that implement u_int as 16-bit instead of 32-bit.
+	
 	sscanf(m_blockchain.getLastBlockHash().substr(0, 16).c_str(), "%x", &x);
 	validator = x % m_stakepool.size();
+	
 	//Convert first 32 bits of address into u_int and modulate it. Will overflow and break the attack on architectures that implement u_int as 16-bit instead of 32-bit.
 	for (size_t i = 0; i < m_oldStakepool.size(); ++i) {
 		sscanf(m_oldStakepool[i].m_address.substr(0, 16).c_str(), "%x", &x);
@@ -141,15 +144,17 @@ void CServer::countNextValidator(const char * buffer, size_t & index, const size
 		std::cout << validator << std::endl;
 	}
 	
+	size_t stakepoolSize = m_stakepool.size();
 	m_oldStakepool = m_stakepool;
 	while(m_stakepool.size() != 0)
 	{
 		m_unspentTransactions.addTransaction(m_stakepool[0]);
 		m_stakepool.removeTransactionByTxid(m_stakepool[0].m_txid);
 	}
+
 	
 	//Return result.
-	std::cout << validator % m_stakepool.size() << std::endl;
+	return m_oldStakepool[validator % stakepoolSize].m_address;
 }
 
 void CServer::run()
@@ -175,55 +180,84 @@ void CServer::run()
 			runFlag = false;
 		} else if(choice == "getBlockCount")
 		{
-			std::cout << m_blockchain.getBlockCount() << std::endl;
+			char response[256];
+			snprintf(response, sizeof response, "%zu", m_blockchain.getBlockCount());
+			send(socketClient, response, strlen(response), 0);
 		} else if(choice == "printBlockchain")
 		{
-			m_blockchain.print();
+			std::string response = m_blockchain.print();
+			send(socketClient, response.c_str(), response.size(), 0);
 		} else if(choice == "createNewTransaction")
 		{
-			this->createNewTransaction(buffer, index, bytesReceived);
+			if(this->createNewTransaction(buffer, index, bytesReceived) != 0)
+			{
+				const char * response = "Cannot create the transaction.";	
+				send(socketClient, response, strlen(response), 0);
+			}
 		} else if(choice == "loadTransaction")
 		{
-			this->loadTransaction(buffer, index, bytesReceived);
+			if(this->loadTransaction(buffer, index, bytesReceived) != 0)
+			{
+				const char * response = "Cannot create the transaction.";	
+				send(socketClient, response, strlen(response), 0);
+			}
 		} else if(choice == "loadCoinbaseTransaction")
 		{
 			this->loadCoinbaseTransaction(buffer, index, bytesReceived);		
 		} else if(choice == "proposeBlock")
 		{
-			this->proposeBlock(buffer, index, bytesReceived);		
+			if(this->proposeBlock(buffer, index, bytesReceived) != 0)
+			{
+				const char * response = "Cannot create the proposed block.";	
+				send(socketClient, response, strlen(response), 0);
+			}
 		} else if(choice == "stake") 
 		{
-			this->stake(buffer, index, bytesReceived);
+			if(this->stake(buffer, index, bytesReceived) != 0 )
+			{
+				const char * response = "Specified transaction is not in the pool of unspent transactions.";	
+				send(socketClient, response, strlen(response), 0);
+			}
 		} else if(choice == "countNextValidator")
 		{
-			this->countNextValidator(buffer, index, bytesReceived);
+			
+			std::string response = this->countNextValidator(buffer, index, bytesReceived);
+			send(socketClient, response.c_str(), response.size(), 0);
 		} else if(choice == "listMempool")
 		{
-			m_mempool.print();
+			std::string response = m_mempool.print();
+			send(socketClient, response.c_str(), response.size(), 0);
 		} else if(choice == "listMempoolLinkedToMe")
 		{
-			m_mempool.print(m_address);
+			std::string response = m_mempool.print(m_address);
+			send(socketClient, response.c_str(), response.size(), 0);
 		} else if(choice == "listUnspent")
 		{
-			m_unspentTransactions.print();
+			std::string response = m_unspentTransactions.print();
+			send(socketClient, response.c_str(), response.size(), 0);
 		} else if(choice == "listUnspentLinkedToMe")
 		{
-			m_unspentTransactions.print(m_address);
+			std::string response = m_unspentTransactions.print(m_address);
+			send(socketClient, response.c_str(), response.size(), 0);
 		} else if(choice == "listStakepool")
 		{
-			m_stakepool.print();
+			std::string response = m_stakepool.print();
+			send(socketClient, response.c_str(), response.size(), 0);
 		} else if(choice == "listOldStakepool")
 		{
-			m_oldStakepool.print(m_address);
+			std::string response = m_oldStakepool.print(m_address);
+			send(socketClient, response.c_str(), response.size(), 0);
 		} else if(choice == "generate")
 		{
 			m_blockchain.generateToAddress(m_address, m_unspentTransactions);
 		} else if(choice == "printAddress")
 		{
-			std::cout << m_address << std::endl;
+			send(socketClient, m_address.c_str(), m_address.size(), 0);
 		} else
 		{
-			std::cerr << "Unknown command: \"" << std::string(buffer, bytesReceived - 1) << "\"" << std::endl;
+			std::ostringstream oss;
+		        oss << "Unknown command: \"" << std::string(buffer, bytesReceived - 1) << "\"" << std::endl;
+			send(socketClient, oss.str().c_str(), oss.str().size(), 0);
 		} 
 		close(socketClient);
 	}

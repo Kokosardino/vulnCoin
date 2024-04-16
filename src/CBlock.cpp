@@ -3,19 +3,22 @@
 CBlock::CBlock(const std::string prevBlockHash, const std::string transactionsHash, const std::vector<std::string> transactions): m_prevBlockHash(prevBlockHash), m_transactionsHash(transactionsHash), m_transactions(transactions)
 {}
 
-void CBlock::print() const
+std::string CBlock::print() const
 {
-	std::cout << "{" << std::endl 
+	std::ostringstream oss;
+	oss 	<< "{" << std::endl 
 		<< "	prevBlockHash: 		\"" << m_prevBlockHash << "\"" << std::endl
 		<< "	transactionsHash:	\"" << m_transactionsHash << "\"" << std::endl
 		<< "	transactions: 		[" << std::endl;
 	
 	for(const std::string & transaction : m_transactions)
 	{
-		std::cout << "					\"" << transaction << "\"" << std::endl;
+		oss << "					\"" << transaction << "\"" << std::endl;
 
 	}
-	std::cout << "    	      			]" << std::endl << "}" << std::endl;
+	oss << "    	      			]" << std::endl << "}" << std::endl;
+	
+	return oss.str();
 }
 
 std::string CBlock::getBlockHash() const

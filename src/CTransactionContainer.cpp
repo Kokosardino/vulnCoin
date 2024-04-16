@@ -10,28 +10,32 @@ CTransaction CTransactionContainer::getTransactionByTxid(const std::string txid)
 	return (m_container.find(txid))->second;
 }
 
-void CTransactionContainer::print() const
+std::string CTransactionContainer::print() const
 {
-	std::cout << "[" << std::endl;
+	std::ostringstream oss;
+	oss << "]" << std::endl;
 	for(std::map<std::string, CTransaction>::const_iterator it = m_container.begin(); it != m_container.end(); ++it)
 	{
-		it->second.print();
+		oss << it->second.print();
 	}
-	std::cout << "]" << std::endl;
+	oss << "]" << std::endl;
+	return oss.str();
 }
 
-void CTransactionContainer::print(const std::string & address) const
+std::string CTransactionContainer::print(const std::string & address) const
 {
-	std::cout << "[" << std::endl;
+	std::ostringstream oss;
+	oss << "[" << std::endl;
 	for(std::map<std::string, CTransaction>::const_iterator it = m_container.begin(); it != m_container.end(); ++it)
 	{
 		if(address == it->second.m_address)
 		{
 
-			it->second.print();
+			oss << it->second.print();
 		}
 	}
-	std::cout << "]" << std::endl;
+	oss << "]" << std::endl;
+	return oss.str();
 }
 
 bool CTransactionContainer::findTransactions(const std::vector<std::string> & transactions) const

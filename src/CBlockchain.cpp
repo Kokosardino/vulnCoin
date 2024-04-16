@@ -37,12 +37,15 @@ void CBlockchain::addBlock(const std::vector<std::string> & transactions)
 	m_blockchain.emplace_back(CBlock(m_blockchain[m_blockchain.size() - 1].getBlockHash(), crypto.sha256(transactionHash), transactions));
 }
 
-void CBlockchain::print() const
+std::string CBlockchain::print() const
 {
+	std::ostringstream oss;
 	for(size_t i = 0; i < m_blockchain.size(); ++i)
 	{
-		m_blockchain[i].print();
+		oss << m_blockchain[i].print();
 	}
+
+	return oss.str();
 }
 
 size_t CBlockchain::getBlockCount() const

@@ -28,9 +28,10 @@ CTransaction::CTransaction(const std::string address, const int ammount, const i
 	m_txid = crypto.sha256(toBeHashedOss.str());
 }
 
-void CTransaction::print() const
+std::string CTransaction::print() const
 {
-	std::cout << "{" << std::endl
+	std::ostringstream oss;
+	oss << "{" << std::endl
 		<< "	address: \"" << m_address << "\"" << std::endl
 		<< "	txid: \"" << m_txid << "\"" << std::endl
 		<< "	ammount: \"" << m_ammount << "\"" << std::endl
@@ -38,4 +39,5 @@ void CTransaction::print() const
 		<< "	passed: \"" << m_passed <<  "\"" << std::endl
 		<< "	timestamp: \"" << m_timestamp <<  "\"" << std::endl
 		<< "}" << std::endl;
+	return oss.str();
 }

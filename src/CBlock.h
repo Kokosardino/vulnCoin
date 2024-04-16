@@ -9,7 +9,7 @@ class CBlock
 {
 public:
 	CBlock(const std::string prevBlockHash, const std::string transactionsHash, const std::vector<std::string> transactions);
-	void print() const;
+	std::string print() const;
 	std::string getBlockHash() const;
 
 private:
