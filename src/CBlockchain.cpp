@@ -48,6 +48,7 @@ std::string CBlockchain::print() const
 		{
 			oss << ",";
 		}
+		oss << std::endl;
 	}
 	oss << "]" << std::endl;
 

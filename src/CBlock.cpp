@@ -7,9 +7,9 @@ std::string CBlock::print() const
 {
 	std::ostringstream oss;
 	oss 	<< "{" << std::endl 
-		<< "	\"prevBlockHash\": 		\"" << m_prevBlockHash << "\"" << std::endl
-		<< "	\"transactionsHash\":	\"" << m_transactionsHash << "\"" << std::endl
-		<< "	\"transactions\": 		[" << std::endl;
+		<< "	\"prevBlockHash\": 	\"" << m_prevBlockHash << "\"," << std::endl
+		<< "	\"transactionsHash\":	\"" << m_transactionsHash << "\"," << std::endl
+		<< "	\"transactions\": 	[" << std::endl;
 	
 	for(size_t transactionCnt = 0; transactionCnt < m_transactions.size(); ++transactionCnt)
 	{
@@ -21,7 +21,7 @@ std::string CBlock::print() const
 		oss << std::endl;
 
 	}
-	oss << "    	      			]" << std::endl << "}" << std::endl;
+	oss 	<< "    	      			]" << std::endl << "}";
 	
 	return oss.str();
 }
