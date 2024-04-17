@@ -93,13 +93,16 @@ bool CServer::loadTransaction(const char * buffer, size_t & index, const size_t 
 	return 1;
 }
 
-void CServer::loadCoinbaseTransaction(const char * buffer, size_t & index, const size_t bytesReceived)
+std::string CServer::loadCoinbaseTransaction(const char * buffer, size_t & index, const size_t bytesReceived)
 {
 	std::string addressReceiver = this->parseString(buffer, index, bytesReceived), timestampString = this->parseString(buffer, index, bytesReceived);
 			
 	long long timestampLong = std::stoll(timestampString);
 	time_t timestamp = static_cast<time_t>(timestampLong);
-	m_mempool.addTransaction(CTransaction(addressReceiver, 10, 0, true, timestamp));	    }
+	CTransaction transaction(addressReceiver, 10, 0, true, timestamp);
+	m_mempool.addTransaction(transaction);
+	return transaction.m_txid;	
+}
 
 bool CServer::proposeBlock(const char * buffer, size_t & index, const size_t bytesReceived)
 {
@@ -227,7 +230,8 @@ void CServer::run()
 			}
 		} else if(choice == "loadCoinbaseTransaction")
 		{
-			this->loadCoinbaseTransaction(buffer, index, bytesReceived);		
+			std::string response = this->loadCoinbaseTransaction(buffer, index, bytesReceived);
+			send(socketClient, response.c_str(), response.size(), 0);
 		} else if(choice == "proposeBlock")
 		{
 			if(this->proposeBlock(buffer, index, bytesReceived) != 0)
