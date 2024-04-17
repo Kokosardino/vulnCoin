@@ -273,7 +273,7 @@ void CServer::run()
 			send(socketClient, response.c_str(), response.size(), 0);
 		} else if(choice == "listOldStakepool")
 		{
-			std::string response = m_oldStakepool.print(m_address);
+			std::string response = m_oldStakepool.print();
 			send(socketClient, response.c_str(), response.size(), 0);
 		} else if(choice == "generate")
 		{
