@@ -190,8 +190,9 @@ void CServer::run() {
         socklen_t clientSize = sizeof(clientInfo);
         int socketClient = accept(m_socket, (sockaddr * ) & clientInfo, &clientSize);
         //Receive message from the client.
-        char buffer[1024];
+        char buffer[4096];
         size_t bytesReceived = recv(socketClient, buffer, sizeof(buffer), 0);
+        buffer[bytesReceived] = '\0';
         //Parse command from the received buffer.
         size_t index = 0;
         std::string choice = this->parseString(buffer, index, bytesReceived);
