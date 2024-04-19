@@ -209,7 +209,7 @@ std::string CServer::printStakesCoinAge(const CTransactionContainer & stakepool)
         size_t transactionMultiplier = m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(stakepool[i].m_txid);
 	for(size_t j = 0; j < transactionMultiplier; ++j) {
 	    oss << stakepool[i].print();
-	    if(i != stakepool.size() - 1 && j != transactionMultiplier - 1) {
+	    if(i != stakepool.size() - 1 || j != transactionMultiplier - 1) {
 		oss << ",";
 	    }
 	    oss << std::endl;
