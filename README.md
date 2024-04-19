@@ -1,24 +1,3 @@
-<script type="text/javascript"
-  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML">
-</script>
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    tex2jax: {
-      inlineMath: [['$','$'], ['\\(','\\)']],
-      processEscapes: true},
-      jax: ["input/TeX","input/MathML","input/AsciiMath","output/CommonHTML"],
-      extensions: ["tex2jax.js","mml2jax.js","asciimath2jax.js","MathMenu.js","MathZoom.js","AssistiveMML.js", "[Contrib]/a11y/accessibility-menu.js"],
-      TeX: {
-      extensions: ["AMSmath.js","AMSsymbols.js","noErrors.js","noUndefined.js"],
-      equationNumbers: {
-      autoNumber: "AMS"
-      }
-    }
-  });
-</script>
-
-
-
 #  vulnCoin
 
 vulnCoin is a very vulnerable blockchain server powered by PoS protocol. Implementation does offer tools to run a Proof of stake consensus protocol, but it does not neccesarily enforce them. We aimed to create the server as simplistic as possible while providing tools for simulation of run of a real PoS network.
@@ -42,16 +21,16 @@ Network works on UTXO model, but newly created outputs do not reference previous
 * Timestamp
     * Timestamp of the transaction creation.
 * txid
-    * Transaction ID defined as $\text{sha256}(\text{address} || \text{ammount} || \text{passed} || \text{coinbase} || \text{timestamp})$, where '$||$' is a standard string concatenation operator.
+    * Transaction ID defined as $\text{sha256}(\text{address} || \text{ammount} || \text{passed} || \text{coinbase} || \text{timestamp})$, where $||$ is a standard string concatenation operator.
 
 Even though many entropy generators are used, in our PoCs (with only three servers!) we always sleep for one second after creating a transaction, to completely remove the threat of duplicate txids existing in the network.
 
 ## 3. Block
 Blocks consist of three properties:
 * prevBlockHash
-  * Hash of the block is defined as $\text{sha256}(\text{prevBlockHash} || \text{transactionsHash})$, where '$||$' is a standard string concatenation operator.
+  * Hash of the block is defined as $\text{sha256}(\text{prevBlockHash} || \text{transactionsHash})$, where $||$ is a standard string concatenation operator.
 * transactionsHash
-  * Transaction hash is defined as $\text{sha256}(\text{txid}_0 || \text{txid}_1 ||\dots||\text{txid}_n)$, where '$||$' is a standard string concatenation operator and $\text{txid}_0, \text{txid}_1, \dots,\text{txid}_n \in \text{transactions}$.
+  * Transaction hash is defined as $\text{sha256}(\text{txid}_0 || \text{txid}_1 ||\dots||\text{txid}_n)$, where $||$ is a standard string concatenation operator and $\text{txid}_0, \text{txid}_1, \dots,\text{txid}_n \in \text{transactions}$.
 * Transactions
   *  Vector of txids of transactions embedded into the block.
 
