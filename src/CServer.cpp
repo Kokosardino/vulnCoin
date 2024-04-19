@@ -1,8 +1,7 @@
 #include "CServer.h"
 
-CServer::CServer(int coinAge)
-{
-	m_coinAge = coinAge;
+CServer::CServer(int coinAge) {
+    m_coinAge = coinAge;
 }
 
 int CServer::bindSocket(const int port) {
@@ -28,7 +27,7 @@ int CServer::bindSocket(const int port) {
     return 0;
 }
 
-std::string CServer::parseString(const char * buffer, size_t & index, const size_t bytesReceived) {
+std::string CServer::parseString(const char *buffer, size_t &index, const size_t bytesReceived) {
     size_t startIndex = index, cnt = 0;
     //Parse all characters until next whitespaces/binary zero.
     for (; buffer[index] != '\n' && buffer[index] != ' ' && buffer[index] != '\0' && index < bytesReceived; ++index) {
@@ -38,7 +37,7 @@ std::string CServer::parseString(const char * buffer, size_t & index, const size
     return std::string(buffer).substr(startIndex, cnt);
 }
 
-std::vector <std::string> CServer::parseTransactionArray(const char * buffer, size_t index, const size_t bytesReceived) {
+std::vector <std::string> CServer::parseTransactionArray(const char *buffer, size_t index, const size_t bytesReceived) {
     //Jump over the '{' symbol.
     index++;
     std::vector <std::string> transactions;
@@ -54,7 +53,7 @@ std::vector <std::string> CServer::parseTransactionArray(const char * buffer, si
     return transactions;
 }
 
-std::string CServer::createNewTransaction(const char * buffer, size_t & index, const size_t bytesReceived) {
+std::string CServer::createNewTransaction(const char *buffer, size_t &index, const size_t bytesReceived) {
     std::string txid = this->parseString(buffer, index, bytesReceived), addressSender = this->parseString(buffer, index,
                                                                                                           bytesReceived), addressReceiver = this->parseString(
             buffer, index, bytesReceived);
@@ -73,7 +72,7 @@ std::string CServer::createNewTransaction(const char * buffer, size_t & index, c
     return "";
 }
 
-bool CServer::loadTransaction(const char * buffer, size_t & index, const size_t bytesReceived) {
+bool CServer::loadTransaction(const char *buffer, size_t &index, const size_t bytesReceived) {
     std::string txid = this->parseString(buffer, index, bytesReceived), addressSender = this->parseString(buffer, index,
                                                                                                           bytesReceived), addressReceiver = this->parseString(
             buffer, index, bytesReceived), timestampString = this->parseString(buffer, index, bytesReceived);
@@ -93,7 +92,7 @@ bool CServer::loadTransaction(const char * buffer, size_t & index, const size_t 
     return 1;
 }
 
-std::string CServer::loadCoinbaseTransaction(const char * buffer, size_t & index, const size_t bytesReceived) {
+std::string CServer::loadCoinbaseTransaction(const char *buffer, size_t &index, const size_t bytesReceived) {
     std::string addressReceiver = this->parseString(buffer, index, bytesReceived), timestampString = this->parseString(
             buffer, index, bytesReceived);
     //Get the current timestamp.
@@ -105,7 +104,7 @@ std::string CServer::loadCoinbaseTransaction(const char * buffer, size_t & index
     return transaction.m_txid;
 }
 
-bool CServer::proposeBlock(const char * buffer, size_t & index, const size_t bytesReceived) {
+bool CServer::proposeBlock(const char *buffer, size_t &index, const size_t bytesReceived) {
     std::vector <std::string> transactions = this->parseTransactionArray(buffer, index, bytesReceived);
     //Ensure that all specified transactions exist in the mempool.
     if (m_mempool.findTransactions(transactions)) {
@@ -127,9 +126,9 @@ bool CServer::stake(const char *buffer, size_t &index, const size_t bytesReceive
                                                                                                           bytesReceived);
     //Ensure that the specified transaction exists in the UTXOs.
     if (m_unspentTransactions.returnPassed(txid, addressSender) != -1) {
-	//Add the specified transaction from stakepool.
+        //Add the specified transaction from stakepool.
         m_stakepool.addTransaction(m_unspentTransactions.getTransactionByTxid(txid));
-	//Remove specified transaction from the UTXOs.
+        //Remove specified transaction from the UTXOs.
         m_unspentTransactions.removeTransactionByTxid(txid);
         return 0;
     }
@@ -164,19 +163,21 @@ std::string CServer::countNextValidator() {
 
 
 std::string CServer::countNextValidatorCoinAge() {
-	
-    std::vector<CTransaction> oldStakepoolCoinAge, stakepoolCoinAge;
-    for(size_t i = 0; i < m_oldStakepool.size(); ++i) {
-        size_t transactionMultiplier = m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(m_oldStakepool[i].m_txid);
-	for(size_t j = 0; j < transactionMultiplier; ++j) {
-		oldStakepoolCoinAge.push_back(m_oldStakepool[i]);
-	}	
+    //Create stakepools appropriate to the coin ages.
+    std::vector <CTransaction> oldStakepoolCoinAge, stakepoolCoinAge;
+    for (size_t i = 0; i < m_oldStakepool.size(); ++i) {
+        size_t transactionMultiplier =
+                m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(m_oldStakepool[i].m_txid);
+        for (size_t j = 0; j < transactionMultiplier; ++j) {
+            oldStakepoolCoinAge.push_back(m_oldStakepool[i]);
+        }
     }
-    for(size_t i = 0; i < m_stakepool.size(); ++i) {
-        size_t transactionMultiplier = m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(m_stakepool[i].m_txid);
-	for(size_t j = 0; j < transactionMultiplier; ++j) {
-		stakepoolCoinAge.push_back(m_stakepool[i]);
-	}	
+    for (size_t i = 0; i < m_stakepool.size(); ++i) {
+        size_t transactionMultiplier =
+                m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(m_stakepool[i].m_txid);
+        for (size_t j = 0; j < transactionMultiplier; ++j) {
+            stakepoolCoinAge.push_back(m_stakepool[i]);
+        }
     }
 
     unsigned int validator = 0, x;
@@ -202,18 +203,20 @@ std::string CServer::countNextValidatorCoinAge() {
     return stakepoolCoinAge[validator % stakepoolCoinAge.size()].m_address;
 }
 
-std::string CServer::printStakesCoinAge(const CTransactionContainer & stakepool) {
+std::string CServer::printStakesCoinAge(const CTransactionContainer &stakepool) {
+    //Print stakepool appropriate to the coin age.
     std::ostringstream oss;
     oss << "[" << std::endl;
-    for(size_t i = 0; i < stakepool.size(); ++i) {
-        size_t transactionMultiplier = m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(stakepool[i].m_txid);
-	for(size_t j = 0; j < transactionMultiplier; ++j) {
-	    oss << stakepool[i].print();
-	    if(i != stakepool.size() - 1 || j != transactionMultiplier - 1) {
-		oss << ",";
-	    }
-	    oss << std::endl;
-	}	
+    for (size_t i = 0; i < stakepool.size(); ++i) {
+        size_t transactionMultiplier =
+                m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(stakepool[i].m_txid);
+        for (size_t j = 0; j < transactionMultiplier; ++j) {
+            oss << stakepool[i].print();
+            if (i != stakepool.size() - 1 || j != transactionMultiplier - 1) {
+                oss << ",";
+            }
+            oss << std::endl;
+        }
     }
     oss << "]" << std::endl;
     return oss.str();
@@ -296,12 +299,12 @@ void CServer::run() {
                 send(socketClient, response, strlen(response), 0);
             }
         } else if (choice == "countNextValidator") {
-	    std::string response;
-	    if(m_coinAge) {
-            	response = this->countNextValidatorCoinAge();
-	    } else {
-            	response = this->countNextValidator();
-	    }
+            std::string response;
+            if (m_coinAge) {
+                response = this->countNextValidatorCoinAge();
+            } else {
+                response = this->countNextValidator();
+            }
             send(socketClient, response.c_str(), response.size(), 0);
         } else if (choice == "listMempool") {
             std::string response = m_mempool.print();
@@ -317,19 +320,19 @@ void CServer::run() {
             send(socketClient, response.c_str(), response.size(), 0);
         } else if (choice == "listStakepool") {
             std::string response;
-	    if(m_coinAge) { 
-		response = printStakesCoinAge(m_stakepool);
-	    } else {
-	        response = m_stakepool.print();
-	    }
+            if (m_coinAge) {
+                response = printStakesCoinAge(m_stakepool);
+            } else {
+                response = m_stakepool.print();
+            }
             send(socketClient, response.c_str(), response.size(), 0);
         } else if (choice == "listOldStakepool") {
             std::string response;
-	    if(m_coinAge) {
-		response = printStakesCoinAge(m_oldStakepool);
-	    } else {
-		response = m_oldStakepool.print();
-	    }
+            if (m_coinAge) {
+                response = printStakesCoinAge(m_oldStakepool);
+            } else {
+                response = m_oldStakepool.print();
+            }
             send(socketClient, response.c_str(), response.size(), 0);
         } else if (choice == "generate") {
             m_blockchain.generateToAddress(m_address, m_unspentTransactions);

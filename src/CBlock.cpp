@@ -36,10 +36,10 @@ std::string CBlock::getBlockHash() const {
 }
 
 bool CBlock::containsTransaction(const std::string &txid) const {
-   for(const std::string & transaction : m_transactions){
-      if(transaction == txid){
-	      return true;
-      }
-   }
-   return false;
+    for (const std::string &transaction: m_transactions) {
+        if (transaction == txid) {
+            return true;
+        }
+    }
+    return false;
 }	

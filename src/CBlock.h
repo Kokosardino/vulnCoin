@@ -30,7 +30,14 @@ public:
      * @return String representing the sha256 hash of the block.
      */
     std::string getBlockHash() const;
+
+    /**
+     * Check if block contains transaction specified by txid.
+     * @param txid Transaction ID of the searched transaction.
+     * @return true if fitting transation id found. false otherwise.
+     */
     bool containsTransaction(const std::string &txid) const;
+
 private:
     //sha256 hash of the previous block.
     std::string m_prevBlockHash;

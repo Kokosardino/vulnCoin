@@ -21,6 +21,7 @@ public:
      * @param coinbase Specify whether the transaction output is coinbase or not.
      */
     CTransaction(const std::string address, const int ammount, const int passed, const bool coinbase);
+
     /**
      * Create a transaction with predefined timestamp.
      * @param address Address of the reciever (holder) of the transaction output.
@@ -31,6 +32,7 @@ public:
      */
     CTransaction(const std::string address, const int ammount, const int passed, const bool coinbase,
                  const time_t timestamp);
+
     /**
      * Return the information about the transaction in printable format.
      * @return JSON formatted string.

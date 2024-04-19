@@ -9,19 +9,20 @@
 /**
  * Helper class providing basic cryptographic and cryptographic-like functions.
  */
-class CCryptography
-{
+class CCryptography {
 public:
     /**
      * Constructor is needed to initiate randomness.
      */
-	CCryptography();
+    CCryptography();
+
     /**
      * Function to return sha256 hash of a provided string.
      * @param stringToHash String to be hashed.
      * @return sha256 hash of the provided string.
      */
-	std::string sha256(const std::string stringToHash) const;
+    std::string sha256(const std::string stringToHash) const;
+
     /**
      * Primitive function to generate address. Function has many flaws, mainly:
      *      1. If servers are started at the same time, they receive the same addresses. In PoC code, we tackle this by implementing a one second delay between server starts.
@@ -29,10 +30,11 @@ public:
      * Possible future improvement -> Implement public key cryptography.
      * @return The generated address.
      */
-	std::string generateAddress() const;
+    std::string generateAddress() const;
+
 private:
     //Charset to choose hex characters from.
-	const std::string m_charset = "abcdef1234567890";
+    const std::string m_charset = "abcdef1234567890";
     //Fixed lengths of the address and charset. Address length CANNOT be changed under 32 bits (ADDRESS_SIZE = 16).
-	const size_t ADDRESS_SIZE = 64, CHARSET_SIZE = 15;
+    const size_t ADDRESS_SIZE = 64, CHARSET_SIZE = 15;
 };
