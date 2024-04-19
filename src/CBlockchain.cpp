@@ -63,6 +63,15 @@ size_t CBlockchain::getBlockCount() const {
     return m_blockchain.size();
 }
 
+int CBlockchain::getTransactionIndex(const std::string &txid) const {
+    for(size_t i = 0; i < m_blockchain.size(); ++i) {
+    	if(m_blockchain[i].containsTransaction(txid)) {
+	    return i;
+	}
+    }
+    return -1;
+}
+
 std::string CBlockchain::getLastBlockHash() const {
     return m_blockchain[m_blockchain.size() - 1].getBlockHash();
 }

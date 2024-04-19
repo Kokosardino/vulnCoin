@@ -1,5 +1,10 @@
 #include "CServer.h"
 
+CServer::CServer(int coinAge)
+{
+	m_coinAge = coinAge;
+}
+
 int CServer::bindSocket(const int port) {
     //Create the socket bound to IPv4 and TCP.
     m_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -122,9 +127,9 @@ bool CServer::stake(const char *buffer, size_t &index, const size_t bytesReceive
                                                                                                           bytesReceived);
     //Ensure that the specified transaction exists in the UTXOs.
     if (m_unspentTransactions.returnPassed(txid, addressSender) != -1) {
-        //Add the specified transaction from stakepool.
+	//Add the specified transaction from stakepool.
         m_stakepool.addTransaction(m_unspentTransactions.getTransactionByTxid(txid));
-        //Remove specified transaction from the UTXOs.
+	//Remove specified transaction from the UTXOs.
         m_unspentTransactions.removeTransactionByTxid(txid);
         return 0;
     }
@@ -155,6 +160,63 @@ std::string CServer::countNextValidator() {
 
     //Return result address.
     return m_oldStakepool[validator % stakepoolSize].m_address;
+}
+
+
+std::string CServer::countNextValidatorCoinAge() {
+	
+    std::vector<CTransaction> oldStakepoolCoinAge, stakepoolCoinAge;
+    for(size_t i = 0; i < m_oldStakepool.size(); ++i) {
+        size_t transactionMultiplier = m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(m_oldStakepool[i].m_txid);
+	for(size_t j = 0; j < transactionMultiplier; ++j) {
+		oldStakepoolCoinAge.push_back(m_oldStakepool[i]);
+	}	
+    }
+    for(size_t i = 0; i < m_stakepool.size(); ++i) {
+        size_t transactionMultiplier = m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(m_stakepool[i].m_txid);
+	for(size_t j = 0; j < transactionMultiplier; ++j) {
+		stakepoolCoinAge.push_back(m_stakepool[i]);
+	}	
+    }
+
+    unsigned int validator = 0, x;
+    //Convert first 32 bits of lastBlockHash into u_int and modulate it. Will overflow and break the attack on architectures that implement u_int as 16-bit instead of 32-bit.
+    sscanf(m_blockchain.getLastBlockHash().substr(0, 16).c_str(), "%x", &x);
+    validator = x % stakepoolCoinAge.size();
+
+    //Convert first 32 bits of each address from the previous stakepool into u_int and modulate it. Will overflow and break the attack on architectures that implement u_int as 16-bit instead of 32-bit.
+    for (size_t i = 0; i < oldStakepoolCoinAge.size(); ++i) {
+        sscanf(oldStakepoolCoinAge[i].m_address.substr(0, 16).c_str(), "%x", &x);
+        validator += x % stakepoolCoinAge.size();
+    }
+
+    //Save size of the current mempool before clearing it.
+    m_oldStakepool = m_stakepool;
+    while (m_stakepool.size() != 0) {
+        //Move transactions from stakepool back betwwen other UTXOs.
+        m_unspentTransactions.addTransaction(m_stakepool[0]);
+        m_stakepool.removeTransactionByTxid(m_stakepool[0].m_txid);
+    }
+
+    //Return result address.
+    return stakepoolCoinAge[validator % stakepoolCoinAge.size()].m_address;
+}
+
+std::string CServer::printStakesCoinAge(const CTransactionContainer & stakepool) {
+    std::ostringstream oss;
+    oss << "[" << std::endl;
+    for(size_t i = 0; i < stakepool.size(); ++i) {
+        size_t transactionMultiplier = m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(stakepool[i].m_txid);
+	for(size_t j = 0; j < transactionMultiplier; ++j) {
+	    oss << stakepool[i].print();
+	    if(i != stakepool.size() - 1 && j != transactionMultiplier - 1) {
+		oss << ",";
+	    }
+	    oss << std::endl;
+	}	
+    }
+    oss << "]" << std::endl;
+    return oss.str();
 }
 
 std::string CServer::printTransaction(const char *buffer, size_t &index, const size_t bytesReceived) {
@@ -234,7 +296,12 @@ void CServer::run() {
                 send(socketClient, response, strlen(response), 0);
             }
         } else if (choice == "countNextValidator") {
-            std::string response = this->countNextValidator();
+	    std::string response;
+	    if(m_coinAge) {
+            	response = this->countNextValidatorCoinAge();
+	    } else {
+            	response = this->countNextValidator();
+	    }
             send(socketClient, response.c_str(), response.size(), 0);
         } else if (choice == "listMempool") {
             std::string response = m_mempool.print();
@@ -249,10 +316,20 @@ void CServer::run() {
             std::string response = m_unspentTransactions.print(m_address);
             send(socketClient, response.c_str(), response.size(), 0);
         } else if (choice == "listStakepool") {
-            std::string response = m_stakepool.print();
+            std::string response;
+	    if(m_coinAge) { 
+		response = printStakesCoinAge(m_stakepool);
+	    } else {
+	        response = m_stakepool.print();
+	    }
             send(socketClient, response.c_str(), response.size(), 0);
         } else if (choice == "listOldStakepool") {
-            std::string response = m_oldStakepool.print();
+            std::string response;
+	    if(m_coinAge) {
+		response = printStakesCoinAge(m_oldStakepool);
+	    } else {
+		response = m_oldStakepool.print();
+	    }
             send(socketClient, response.c_str(), response.size(), 0);
         } else if (choice == "generate") {
             m_blockchain.generateToAddress(m_address, m_unspentTransactions);

@@ -34,3 +34,12 @@ std::string CBlock::getBlockHash() const {
 
     return crypto.sha256(oss.str());
 }
+
+bool CBlock::containsTransaction(const std::string &txid) const {
+   for(const std::string & transaction : m_transactions){
+      if(transaction == txid){
+	      return true;
+      }
+   }
+   return false;
+}	

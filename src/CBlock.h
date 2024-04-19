@@ -30,7 +30,7 @@ public:
      * @return String representing the sha256 hash of the block.
      */
     std::string getBlockHash() const;
-
+    bool containsTransaction(const std::string &txid) const;
 private:
     //sha256 hash of the previous block.
     std::string m_prevBlockHash;

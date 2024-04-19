@@ -69,7 +69,7 @@ public:
      * @param index Index of the searched transaction.
      * @return Transaction on the specified index.
      */
-    CTransaction operator[](size_t index);
+    CTransaction operator[](size_t index) const;
 
 private:
     //Transactions sorted by txid.

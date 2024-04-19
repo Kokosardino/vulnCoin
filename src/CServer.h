@@ -16,7 +16,7 @@ public:
     /**
      * Default constructor.
      */
-    CServer() = default;
+    CServer(int coinAge);
     /**
      * Function that starts server on a specified port.
      * @param port Port to start the server on.
@@ -84,6 +84,7 @@ public:
      * @return The index of the transaction owner of which is chosen as creator of the next block.
      */
     std::string countNextValidator();
+    std::string countNextValidatorCoinAge();
     /**
      * Print transaction specified by transaction ID in the format "printTransaction <txid>".
      * @param buffer Buffer of received command.
@@ -92,6 +93,7 @@ public:
      * @return Transaction information formatted as JSON.
      */
     std::string printTransaction(const char *buffer, size_t &index, const size_t bytesReceived);
+    std::string printStakesCoinAge(const CTransactionContainer &stakepool);
     /**
      * Start the server. Can be stopped simply by command "stop".
      */
@@ -99,7 +101,7 @@ public:
 
 private:
     //Socket the server connects to.
-    int m_socket;
+    int m_coinAge, m_socket;
     //Information about server.
     sockaddr_in m_serverInfo;
     //Blockchain the server holds. -> Is lost when the server is stopped.

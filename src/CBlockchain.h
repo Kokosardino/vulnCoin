@@ -30,12 +30,13 @@ public:
      * Return printable string representing the blockchain data.
      * @return String representing the blockchain data in JSON formatting.
      */
-	std::string print() const;
+ 	std::string print() const;
     /**
      * @return Number of blocks in the blockchain.
      */
-	size_t getBlockCount() const;
-    /**
+     size_t getBlockCount() const;
+     int getTransactionIndex(const std::string &txid) const; 
+     /**
      * @return sha256 hash of the last block in the blockchain.
      */
 	std::string getLastBlockHash() const;

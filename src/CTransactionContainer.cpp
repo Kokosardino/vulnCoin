@@ -95,8 +95,8 @@ size_t CTransactionContainer::size() const {
     return m_container.size();
 }
 
-CTransaction CTransactionContainer::operator[](size_t index) {
-    std::map<std::string, CTransaction>::iterator it = m_container.begin();
+CTransaction CTransactionContainer::operator[](size_t index) const {
+    std::map<std::string, CTransaction>::const_iterator it = m_container.begin();
     std::advance(it, index);
     return it->second;
 }
