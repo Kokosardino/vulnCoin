@@ -167,7 +167,7 @@ std::string CServer::countNextValidatorCoinAge() {
     std::vector <CTransaction> oldStakepoolCoinAge, stakepoolCoinAge;
     for (size_t i = 0; i < m_oldStakepool.size(); ++i) {
         size_t transactionMultiplier =
-                m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(m_oldStakepool[i].m_txid);
+                m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(m_oldStakepool[i].m_txid) - 1;
         for (size_t j = 0; j < transactionMultiplier; ++j) {
             oldStakepoolCoinAge.push_back(m_oldStakepool[i]);
         }
@@ -210,6 +210,9 @@ std::string CServer::printStakesCoinAge(const CTransactionContainer &stakepool) 
     for (size_t i = 0; i < stakepool.size(); ++i) {
         size_t transactionMultiplier =
                 m_blockchain.getBlockCount() - m_blockchain.getTransactionIndex(stakepool[i].m_txid);
+	if(stakepool == m_oldStakepool) {
+		--transactionMultiplier;
+	}
         for (size_t j = 0; j < transactionMultiplier; ++j) {
             oss << stakepool[i].print();
             if (i != stakepool.size() - 1 || j != transactionMultiplier - 1) {
