@@ -27,11 +27,3 @@ std::string CCryptography::sha256(const std::string stringToHash) const {
     }
     return hashOutputOss.str();
 }
-
-std::string CCryptography::generateAddress() const {
-    std::ostringstream address;
-    for (size_t i = 0; i < ADDRESS_SIZE; ++i) {
-        address << m_charset[std::rand() % CHARSET_SIZE];
-    }
-    return address.str();
-}

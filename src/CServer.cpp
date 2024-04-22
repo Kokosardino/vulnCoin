@@ -1,7 +1,11 @@
 #include "CServer.h"
 
-CServer::CServer(int coinAge) {
+CServer::CServer(std::string entropy, int coinAge) {
     m_coinAge = coinAge;
+
+    //Generate address for the server.
+    CCryptography crypto;
+    m_address = crypto.sha256(entropy);
 }
 
 int CServer::bindSocket(const int port) {
@@ -246,9 +250,6 @@ std::string CServer::printTransaction(const char *buffer, size_t &index, const s
 }
 
 void CServer::run() {
-    //Generate address for the server.
-    CCryptography crypto;
-    m_address = crypto.generateAddress();
 
     //Server waits for commands until receiving the "stop" command.
     bool runFlag = true;

@@ -16,7 +16,7 @@ public:
     /**
      * Default constructor.
      */
-    CServer(int coinAge);
+    CServer(std::string entropy, int coinAge);
 
     /**
      * Function that starts server on a specified port.
